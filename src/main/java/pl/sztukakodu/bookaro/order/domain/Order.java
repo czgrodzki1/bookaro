@@ -22,9 +22,10 @@ public class Order {
     private Long id;
 
     @Builder.Default
+    @Enumerated(value = EnumType.STRING)
     private OrderStatus status = OrderStatus.NEW;
 
-    @OneToMany
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "order_id")
     private List<OrderItem> items;
 
