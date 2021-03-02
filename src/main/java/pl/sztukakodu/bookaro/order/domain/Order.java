@@ -33,7 +33,8 @@ public class Order {
     @JoinColumn(name = "order_id")
     private List<OrderItem> items;
 
-    private transient Recipient recipient;
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Recipient recipient;
 
     @CreatedDate
     private LocalDateTime createdAt;
