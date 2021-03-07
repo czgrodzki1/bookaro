@@ -1,6 +1,7 @@
 package pl.sztukakodu.bookaro.catalog.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -24,8 +26,8 @@ public class Author {
     private String firstName;
     private String lastName;
     @ManyToMany(fetch = FetchType.EAGER, mappedBy = "authors")
-    @JsonIgnore
-    private Set<Book> books;
+    @JsonIgnoreProperties("authors")
+    private Set<Book> books = new HashSet<>();
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -34,5 +36,15 @@ public class Author {
     public Author(String firstName, String lastName) {
         this.firstName = firstName;
         this.lastName = lastName;
+    }
+
+    public void addBook(Book book) {
+        books.add(book);
+        book.getAuthors().add(this);
+    }
+
+    public void removeBook(Book book) {
+        books.remove(book);
+        book.getAuthors().remove(this);
     }
 }
