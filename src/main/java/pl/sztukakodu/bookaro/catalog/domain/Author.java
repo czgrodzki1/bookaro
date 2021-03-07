@@ -2,23 +2,23 @@ package pl.sztukakodu.bookaro.catalog.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import pl.sztukakodu.bookaro.jpa.BaseEntity;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @ToString(exclude = "books")
 @EntityListeners(AuditingEntityListener.class)
-public class Author {
+public class Author extends BaseEntity {
 
     @Id
     @GeneratedValue

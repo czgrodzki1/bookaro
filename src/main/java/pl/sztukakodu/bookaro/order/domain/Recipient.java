@@ -1,21 +1,20 @@
 package pl.sztukakodu.bookaro.order.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import pl.sztukakodu.bookaro.jpa.BaseEntity;
 
 import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-@Data
+@Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class Recipient {
+public class Recipient extends BaseEntity {
 
     @Id
     private String name;

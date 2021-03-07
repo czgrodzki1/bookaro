@@ -3,6 +3,7 @@ package pl.sztukakodu.bookaro.uploads.domain;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import pl.sztukakodu.bookaro.jpa.BaseEntity;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
@@ -10,11 +11,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class Upload {
+public class Upload extends BaseEntity {
 
     @Id
     @GeneratedValue
