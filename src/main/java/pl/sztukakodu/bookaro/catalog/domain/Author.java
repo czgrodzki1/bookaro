@@ -15,14 +15,12 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
+@AllArgsConstructor
 @NoArgsConstructor
 @ToString(exclude = "books")
 @EntityListeners(AuditingEntityListener.class)
 public class Author extends BaseEntity {
 
-    @Id
-    @GeneratedValue
-    private Long id;
     private String firstName;
     private String lastName;
     @ManyToMany(fetch = FetchType.EAGER, mappedBy = "authors")

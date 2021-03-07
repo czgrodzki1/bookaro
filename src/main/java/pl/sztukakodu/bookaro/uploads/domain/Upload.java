@@ -7,20 +7,16 @@ import pl.sztukakodu.bookaro.jpa.BaseEntity;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class Upload extends BaseEntity {
 
-    @Id
-    @GeneratedValue
-    private Long id;
     private byte[] file;
     private String contentType;
     private String filename;

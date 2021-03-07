@@ -1,10 +1,7 @@
 package pl.sztukakodu.bookaro.catalog.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -15,19 +12,16 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 @Getter
 @Setter
 @ToString(exclude = "authors")
+@AllArgsConstructor
 @RequiredArgsConstructor
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class Book extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
     private String title;
     private Integer year;
     private BigDecimal price;

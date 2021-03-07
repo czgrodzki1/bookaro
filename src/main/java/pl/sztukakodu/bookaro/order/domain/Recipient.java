@@ -16,7 +16,6 @@ import javax.persistence.Id;
 @Entity
 public class Recipient extends BaseEntity {
 
-    @Id
     private String name;
     private String phone;
     private String street;
