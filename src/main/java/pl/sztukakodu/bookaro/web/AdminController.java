@@ -80,13 +80,15 @@ public class AdminController {
                 "Effective Java",
                 Set.of(joshua.getId()),
                 2005,
-                new BigDecimal("79.00")
+                new BigDecimal("79.00"),
+                50L
         );
         CatalogUseCase.CreateBookCommand javaPuzzlers = new CatalogUseCase.CreateBookCommand(
                 "Java Puzzlers",
                 Set.of(joshua.getId(), neal.getId()),
                 2018,
-                new BigDecimal("99.00")
+                new BigDecimal("99.00"),
+                50L
         );
         catalog.addBook(javaPuzzlers);
         catalog.addBook(effectiveJava);
