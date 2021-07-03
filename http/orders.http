@@ -1,15 +1,18 @@
-###
+### Init data
+GET http://localhost:8080/admin/data
+
+### Add order
 POST http://localhost:8080/orders
 Content-Type: application/json
 
 {
   "items": [
     {
-      "bookId": 0,
+      "bookId": 3,
       "quantity": 2
     },
     {
-      "bookId": 1,
+      "bookId": 4,
       "quantity": 1
     }
   ],
@@ -23,5 +26,13 @@ Content-Type: application/json
   }
 }
 
+### Get order by id
+GET http://localhost:8080/orders/9
+
 ###
-GET http://localhost:8080/orders/2
+PUT http://localhost:8080/orders/9/status
+Content-Type: application/json
+
+{
+  "status" : "SHIPPED"
+}
