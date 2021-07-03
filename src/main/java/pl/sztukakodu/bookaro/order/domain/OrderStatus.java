@@ -13,7 +13,7 @@ public enum OrderStatus {
                 case PAID -> PAID;
                 case CANCELED -> CANCELED;
                 case ABANDONED -> ABANDONED;
-                default -> status.updateStatus(status);
+                default -> super.updateStatus(status);
             };
         }
 
@@ -24,7 +24,7 @@ public enum OrderStatus {
             if (status == SHIPPED) {
                 return SHIPPED;
             }
-            return status.updateStatus(status);
+            return super.updateStatus(status);
         }
     },
     CANCELED,
