@@ -9,7 +9,7 @@ Content-Type: application/json
   "items": [
     {
       "bookId": 3,
-      "quantity": 2
+      "quantity": 10
     },
     {
       "bookId": 4,

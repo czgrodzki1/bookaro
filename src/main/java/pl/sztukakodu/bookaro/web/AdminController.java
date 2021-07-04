@@ -16,6 +16,8 @@ import pl.sztukakodu.bookaro.order.domain.Recipient;
 import java.math.BigDecimal;
 import java.util.Set;
 
+import static pl.sztukakodu.bookaro.order.application.port.ManipulateOrderUseCase.*;
+
 @RestController
 @AllArgsConstructor
 @RequestMapping("/admin")
@@ -51,14 +53,14 @@ public class AdminController {
                 .email("jan@example.org")
                 .build();
 
-        ManipulateOrderUseCase.PlaceOrderCommand command = ManipulateOrderUseCase.PlaceOrderCommand
+        PlaceOrderCommand command = PlaceOrderCommand
                 .builder()
                 .recipient(recipient)
-                .item(new OrderItem(effectiveJava.getId(), 16))
-                .item(new OrderItem(puzzlers.getId(), 7))
+                .item(new OrderItemCommand(effectiveJava.getId(), 16))
+                .item(new OrderItemCommand(puzzlers.getId(), 7))
                 .build();
 
-        ManipulateOrderUseCase.PlaceOrderResponse response = placeOrder.placeOrder(command);
+        PlaceOrderResponse response = placeOrder.placeOrder(command);
         String result = response.handle(
                 orderId -> "Created ORDER with id: " + orderId,
                 error -> "Failed to created order: " + error

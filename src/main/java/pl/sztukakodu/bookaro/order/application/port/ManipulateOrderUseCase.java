@@ -1,15 +1,11 @@
 package pl.sztukakodu.bookaro.order.application.port;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Singular;
-import lombok.Value;
+import lombok.*;
 import pl.sztukakodu.bookaro.commons.Either;
-import pl.sztukakodu.bookaro.order.domain.OrderItem;
 import pl.sztukakodu.bookaro.order.domain.OrderStatus;
 import pl.sztukakodu.bookaro.order.domain.Recipient;
 
-import java.util.List;
+import java.util.Set;
 
 public interface ManipulateOrderUseCase {
     PlaceOrderResponse placeOrder(PlaceOrderCommand command);
@@ -23,8 +19,14 @@ public interface ManipulateOrderUseCase {
     @AllArgsConstructor
     class PlaceOrderCommand {
         @Singular
-        List<OrderItem> items;
+        Set<OrderItemCommand> items;
         Recipient recipient;
+    }
+
+    @Value
+    class OrderItemCommand {
+        Long bookId;
+        int quantity;
     }
 
     class PlaceOrderResponse extends Either<String, Long> {
