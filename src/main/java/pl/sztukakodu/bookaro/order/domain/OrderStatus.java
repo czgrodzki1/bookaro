@@ -8,11 +8,11 @@ import java.util.Optional;
 public enum OrderStatus {
     NEW {
         @Override
-        public OrderStatus updateStatus(OrderStatus status) {
+        public UpdateStatusResult updateStatus(OrderStatus status) {
             return switch (status) {
-                case PAID -> PAID;
-                case CANCELED -> CANCELED;
-                case ABANDONED -> ABANDONED;
+                case PAID -> new UpdateStatusResult(PAID, false);
+                case CANCELED -> new UpdateStatusResult(CANCELED, true);
+                case ABANDONED -> new UpdateStatusResult(ABANDONED, true);
                 default -> super.updateStatus(status);
             };
         }
@@ -20,9 +20,9 @@ public enum OrderStatus {
     },
     PAID {
         @Override
-        public OrderStatus updateStatus(OrderStatus status) {
+        public UpdateStatusResult updateStatus(OrderStatus status) {
             if (status == SHIPPED) {
-                return SHIPPED;
+                return new UpdateStatusResult(SHIPPED, false);
             }
             return super.updateStatus(status);
         }
@@ -37,7 +37,7 @@ public enum OrderStatus {
                      .findFirst();
     }
 
-    public OrderStatus updateStatus(OrderStatus status) {
+    public UpdateStatusResult updateStatus(OrderStatus status) {
         throw new IllegalArgumentException("Unable to mark " + this.name() + " order as " + status.name());
     }
 }

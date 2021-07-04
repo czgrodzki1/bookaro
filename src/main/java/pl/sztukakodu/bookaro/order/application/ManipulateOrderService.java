@@ -8,10 +8,7 @@ import pl.sztukakodu.bookaro.catalog.domain.Book;
 import pl.sztukakodu.bookaro.order.application.port.ManipulateOrderUseCase;
 import pl.sztukakodu.bookaro.order.db.OrderJpaRepository;
 import pl.sztukakodu.bookaro.order.db.RecipientRepository;
-import pl.sztukakodu.bookaro.order.domain.Order;
-import pl.sztukakodu.bookaro.order.domain.OrderItem;
-import pl.sztukakodu.bookaro.order.domain.OrderStatus;
-import pl.sztukakodu.bookaro.order.domain.Recipient;
+import pl.sztukakodu.bookaro.order.domain.*;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -54,6 +51,14 @@ class ManipulateOrderService implements ManipulateOrderUseCase {
           }).collect(Collectors.toSet());
     }
 
+    private Set<Book> revokeBookAvailability(Set<OrderItem> items) {
+        return items.stream().map(orderItem -> {
+            Book book = orderItem.getBook();
+            book.setAvailable(book.getAvailable() + orderItem.getQuantity());
+            return book;
+        }).collect(Collectors.toSet());
+    }
+
     private OrderItem toOrderItem(OrderItemCommand command) {
         int quantity = command.getQuantity();
         Book book = bookJpaRepository.getOne(command.getBookId());
@@ -74,7 +79,10 @@ class ManipulateOrderService implements ManipulateOrderUseCase {
     public void updateOrderStatus(Long id, OrderStatus status) {
         orderJpaRepository.findById(id)
                   .ifPresent(order -> {
-                      order.updateStatus(status);
+                      UpdateStatusResult result = order.updateStatus(status);
+                      if (result.isRevoke()) {
+                          bookJpaRepository.saveAll(revokeBookAvailability(order.getItems()));
+                      }
                       orderJpaRepository.save(order);
                   });
     }
