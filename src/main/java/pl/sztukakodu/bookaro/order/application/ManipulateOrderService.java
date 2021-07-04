@@ -7,9 +7,11 @@ import pl.sztukakodu.bookaro.catalog.db.BookJpaRepository;
 import pl.sztukakodu.bookaro.catalog.domain.Book;
 import pl.sztukakodu.bookaro.order.application.port.ManipulateOrderUseCase;
 import pl.sztukakodu.bookaro.order.db.OrderJpaRepository;
+import pl.sztukakodu.bookaro.order.db.RecipientRepository;
 import pl.sztukakodu.bookaro.order.domain.Order;
 import pl.sztukakodu.bookaro.order.domain.OrderItem;
 import pl.sztukakodu.bookaro.order.domain.OrderStatus;
+import pl.sztukakodu.bookaro.order.domain.Recipient;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,8 +20,9 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 class ManipulateOrderService implements ManipulateOrderUseCase {
-    private final OrderJpaRepository repository;
+    private final OrderJpaRepository orderJpaRepository;
     private final BookJpaRepository bookJpaRepository;
+    private final RecipientRepository recipientJpaRepository;
 
     @Override public PlaceOrderResponse placeOrder(PlaceOrderCommand command) {
         Set<OrderItem> items = command.getItems()
@@ -29,14 +32,18 @@ class ManipulateOrderService implements ManipulateOrderUseCase {
 
         Order order = Order
             .builder()
-            .recipient(command.getRecipient())
+            .recipient(getOrCreateRecipient(command.getRecipient()))
             .items(items)
             .build();
-        Order save = repository.save(order);
+        Order save = orderJpaRepository.save(order);
 
         bookJpaRepository.saveAll(updateBookAvailability(items));
 
         return PlaceOrderResponse.success(save.getId());
+    }
+
+    private Recipient getOrCreateRecipient(Recipient recipient) {
+        return recipientJpaRepository.findByEmailIgnoreCase(recipient.getEmail()).orElse(recipient);
     }
 
     private Set<Book> updateBookAvailability(Set<OrderItem> items) {
@@ -60,15 +67,15 @@ class ManipulateOrderService implements ManipulateOrderUseCase {
 
     @Override
     public void deleteOrderById(Long id) {
-        repository.deleteById(id);
+        orderJpaRepository.deleteById(id);
     }
 
     @Override
     public void updateOrderStatus(Long id, OrderStatus status) {
-        repository.findById(id)
+        orderJpaRepository.findById(id)
                   .ifPresent(order -> {
                       order.updateStatus(status);
-                      repository.save(order);
+                      orderJpaRepository.save(order);
                   });
     }
 }
