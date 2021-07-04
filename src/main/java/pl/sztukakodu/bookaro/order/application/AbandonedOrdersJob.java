@@ -9,6 +9,7 @@ import pl.sztukakodu.bookaro.order.db.OrderJpaRepository;
 import pl.sztukakodu.bookaro.order.domain.Order;
 import pl.sztukakodu.bookaro.order.domain.OrderStatus;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -16,13 +17,15 @@ import java.util.List;
 @AllArgsConstructor
 public class AbandonedOrdersJob {
 
-    private OrderJpaRepository orderJpaRepository;
-    private ManipulateOrderUseCase orderUseCase;
+    private final OrderJpaRepository orderJpaRepository;
+    private final ManipulateOrderUseCase orderUseCase;
+    private final OrdersProperties properties;
 
-    @Scheduled(fixedDelay = 60_000)
+    @Scheduled(cron = "${app.orders.abandon-cron}")
     @Transactional
     public void run() {
-        LocalDateTime timeStamp = LocalDateTime.now().minusMinutes(1);
+        Duration paymentPeriod = properties.getPaymentPeriod();
+        LocalDateTime timeStamp = LocalDateTime.now().minus(paymentPeriod);
         List<Order> orders = orderJpaRepository.findOrderByStatusAndCreatedAtLessThanEqual(OrderStatus.NEW, timeStamp);
         orders.forEach(order -> orderUseCase.updateOrderStatus(order.getId(), OrderStatus.ABANDONED));
 
