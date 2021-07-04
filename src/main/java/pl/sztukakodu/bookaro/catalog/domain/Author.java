@@ -20,8 +20,7 @@ import java.util.Set;
 @EntityListeners(AuditingEntityListener.class)
 public class Author extends BaseEntity {
 
-    private String firstName;
-    private String lastName;
+    private String name;
     @ManyToMany(mappedBy = "authors", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonIgnoreProperties("authors")
     private Set<Book> books = new HashSet<>();
@@ -30,9 +29,8 @@ public class Author extends BaseEntity {
     private LocalDateTime createdAt;
 
 
-    public Author(String firstName, String lastName) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+    public Author(String name) {
+        this.name = name;
     }
 
     public void addBook(Book book) {

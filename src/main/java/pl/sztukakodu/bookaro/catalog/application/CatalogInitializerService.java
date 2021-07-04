@@ -3,7 +3,9 @@ package pl.sztukakodu.bookaro.catalog.application;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -11,7 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import pl.sztukakodu.bookaro.catalog.application.port.CatalogInitializerUseCase;
 import pl.sztukakodu.bookaro.catalog.application.port.CatalogUseCase;
 import pl.sztukakodu.bookaro.catalog.db.AuthorJpaRepository;
+import pl.sztukakodu.bookaro.catalog.domain.Author;
 import pl.sztukakodu.bookaro.catalog.domain.Book;
+import pl.sztukakodu.bookaro.jpa.BaseEntity;
 import pl.sztukakodu.bookaro.order.application.port.ManipulateOrderUseCase;
 import pl.sztukakodu.bookaro.order.application.port.QueryOrderUseCase;
 import pl.sztukakodu.bookaro.order.domain.Recipient;
@@ -20,14 +24,16 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static pl.sztukakodu.bookaro.catalog.application.port.CatalogUseCase.*;
 
 @Slf4j
+@Data
 @Service
-@Value
-public class CatalogInitializer implements CatalogInitializerUseCase {
+public class CatalogInitializerService implements CatalogInitializerUseCase {
 
     private final CatalogUseCase catalog;
     private final ManipulateOrderUseCase placeOrder;
@@ -44,7 +50,7 @@ public class CatalogInitializer implements CatalogInitializerUseCase {
     private void initData() {
         ClassPathResource resource = new ClassPathResource("books.csv");
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ClassPathResource("book.csv").getInputStream()))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
             CsvToBean<CsvBook> build = new CsvToBeanBuilder<CsvBook>(reader)
                     .withType(CsvBook.class)
                     .withIgnoreLeadingWhiteSpace(true)
@@ -57,9 +63,18 @@ public class CatalogInitializer implements CatalogInitializerUseCase {
     }
 
     private void initBook(CsvBook csvBook) {
+        Set<Long> authors = Arrays
+                .stream(csvBook.authors.split(","))
+                .filter(name -> !name.isBlank())
+                .map(String::trim)
+                .map(this::getOrCreateAuthor)
+                .map(BaseEntity::getId)
+                .collect(Collectors.toSet());
+
+
         CreateBookCommand createBookCommand = new CreateBookCommand(
                 csvBook.title,
-                Set.of(),
+                authors,
                 csvBook.year,
                 csvBook.amount,
                 50L
@@ -67,6 +82,15 @@ public class CatalogInitializer implements CatalogInitializerUseCase {
         catalog.addBook(createBookCommand);
     }
 
+    private Author getOrCreateAuthor(String name) {
+       return authorRepository.findByNameIgnoreCase(name)
+                .orElseGet(() -> authorRepository.save(new Author(name)));
+
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class CsvBook {
         @CsvBindByName
         private String title;
