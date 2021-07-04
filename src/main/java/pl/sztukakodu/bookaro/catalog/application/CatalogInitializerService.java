@@ -8,8 +8,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import pl.sztukakodu.bookaro.catalog.application.port.CatalogInitializerUseCase;
 import pl.sztukakodu.bookaro.catalog.application.port.CatalogUseCase;
 import pl.sztukakodu.bookaro.catalog.db.AuthorJpaRepository;
@@ -39,6 +42,7 @@ public class CatalogInitializerService implements CatalogInitializerUseCase {
     private final ManipulateOrderUseCase placeOrder;
     private final QueryOrderUseCase queryOrder;
     private final AuthorJpaRepository authorRepository;
+    private final RestTemplate restTemplate;
 
     @Override
     @Transactional
@@ -79,7 +83,14 @@ public class CatalogInitializerService implements CatalogInitializerUseCase {
                 csvBook.amount,
                 50L
         );
-        catalog.addBook(createBookCommand);
+        Book book = catalog.addBook(createBookCommand);
+        catalog.updateBookCover(updateBookCoverCommand(book.getId(), csvBook.thumbnail));
+    }
+
+    private UpdateBookCoverCommand updateBookCoverCommand(Long id, String thumbnail) {
+        ResponseEntity<byte[]> responseEntity = restTemplate.exchange(thumbnail, HttpMethod.GET, null, byte[].class);
+        return new UpdateBookCoverCommand(id, responseEntity.getBody(), responseEntity.getHeaders().getContentType().toString(), "cover");
+
     }
 
     private Author getOrCreateAuthor(String name) {
