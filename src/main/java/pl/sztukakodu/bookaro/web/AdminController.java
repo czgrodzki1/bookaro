@@ -1,6 +1,7 @@
 package pl.sztukakodu.bookaro.web;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,7 +11,6 @@ import pl.sztukakodu.bookaro.catalog.domain.Author;
 import pl.sztukakodu.bookaro.catalog.domain.Book;
 import pl.sztukakodu.bookaro.order.application.port.ManipulateOrderUseCase;
 import pl.sztukakodu.bookaro.order.application.port.QueryOrderUseCase;
-import pl.sztukakodu.bookaro.order.domain.OrderItem;
 import pl.sztukakodu.bookaro.order.domain.Recipient;
 
 import java.math.BigDecimal;
@@ -18,6 +18,7 @@ import java.util.Set;
 
 import static pl.sztukakodu.bookaro.order.application.port.ManipulateOrderUseCase.*;
 
+@Slf4j
 @RestController
 @AllArgsConstructor
 @RequestMapping("/admin")
@@ -65,11 +66,11 @@ public class AdminController {
                 orderId -> "Created ORDER with id: " + orderId,
                 error -> "Failed to created order: " + error
         );
-        System.out.println(result);
+        log.info(result);
 
         // list all orders
         queryOrder.findAll()
-                .forEach(order -> System.out.println("GOT ORDER WITH TOTAL PRICE: " + order.totalPrice() + " DETAILS: " + order));
+                .forEach(order -> log.info("GOT ORDER WITH TOTAL PRICE: {} DETAILS: {} ", order.totalPrice(), order));
     }
 
     private void initData() {

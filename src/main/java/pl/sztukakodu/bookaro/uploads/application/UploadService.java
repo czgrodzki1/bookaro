@@ -1,6 +1,7 @@
 package pl.sztukakodu.bookaro.uploads.application;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import pl.sztukakodu.bookaro.uploads.application.ports.UploadUseCase;
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 class UploadService implements UploadUseCase {
@@ -25,7 +27,7 @@ class UploadService implements UploadUseCase {
                 command.getContentType()
         );
         repository.save(upload);
-        System.out.println("Upload saved: " + upload.getFilename() + " with id: " + upload.getId());
+        log.info("Upload saved: {} with id: {}", upload.getFilename(), upload.getId());
         return upload;
     }
 
