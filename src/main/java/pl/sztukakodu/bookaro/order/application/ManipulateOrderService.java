@@ -10,6 +10,7 @@ import pl.sztukakodu.bookaro.order.db.OrderJpaRepository;
 import pl.sztukakodu.bookaro.order.db.RecipientRepository;
 import pl.sztukakodu.bookaro.order.domain.*;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,7 +22,8 @@ class ManipulateOrderService implements ManipulateOrderUseCase {
     private final BookJpaRepository bookJpaRepository;
     private final RecipientRepository recipientJpaRepository;
 
-    @Override public PlaceOrderResponse placeOrder(PlaceOrderCommand command) {
+    @Override
+    public PlaceOrderResponse placeOrder(PlaceOrderCommand command) {
         Set<OrderItem> items = command.getItems()
                 .stream()
                 .map(this::toOrderItem)
@@ -61,7 +63,7 @@ class ManipulateOrderService implements ManipulateOrderUseCase {
 
     private OrderItem toOrderItem(OrderItemCommand command) {
         int quantity = command.getQuantity();
-        Book book = bookJpaRepository.getOne(command.getBookId());
+        Book book = getBook(command.getBookId());
         if (book.getAvailable() >= quantity) {
             return new OrderItem(book, quantity);
         } else {
@@ -70,20 +72,40 @@ class ManipulateOrderService implements ManipulateOrderUseCase {
         }
     }
 
+    private Book getBook(Long id) {
+        Optional<Book> book = bookJpaRepository.findById(id);
+        if (book.isEmpty()) {
+            throw new IllegalArgumentException("There is no book with id " + id);
+        }
+
+        return book.get();
+    }
+
     @Override
     public void deleteOrderById(Long id) {
         orderJpaRepository.deleteById(id);
     }
 
     @Override
-    public void updateOrderStatus(Long id, OrderStatus status) {
-        orderJpaRepository.findById(id)
-                  .ifPresent(order -> {
-                      UpdateStatusResult result = order.updateStatus(status);
-                      if (result.isRevoke()) {
-                          bookJpaRepository.saveAll(revokeBookAvailability(order.getItems()));
-                      }
-                      orderJpaRepository.save(order);
-                  });
+    public UpdateStatusResponse updateOrderStatus(UpdateStatusCommand command) {
+        return orderJpaRepository
+                .findById(command.getOrderId())
+                .map(order -> {
+                    if (!hasAccess(command, order)) {
+                        return UpdateStatusResponse.failure("Unauthorized");
+                    }
+                    UpdateStatusResult result = order.updateStatus(command.getStatus());
+                    if (result.isRevoke()) {
+                        bookJpaRepository.saveAll(revokeBookAvailability(order.getItems()));
+                    }
+                    orderJpaRepository.save(order);
+                    return UpdateStatusResponse.success(order.getStatus());
+                })
+                .orElse(UpdateStatusResponse.failure("Order not found"));
+    }
+
+    private boolean hasAccess(UpdateStatusCommand command, Order order) {
+        String email = command.getEmail();
+        return email.equalsIgnoreCase(order.getRecipient().getEmail()) || email.equalsIgnoreCase("admin@example.com");
     }
 }

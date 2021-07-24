@@ -14,6 +14,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static pl.sztukakodu.bookaro.order.application.port.ManipulateOrderUseCase.*;
+
 @Slf4j
 @Component
 @AllArgsConstructor
@@ -30,8 +32,11 @@ public class AbandonedOrdersJob {
         LocalDateTime timeStamp = LocalDateTime.now().minus(paymentPeriod);
         List<Order> orders = orderJpaRepository.findOrderByStatusAndCreatedAtLessThanEqual(OrderStatus.NEW, timeStamp);
         log.info("Found orders to be marked as abandoned: {} ", orders.size());
-        orders.forEach(order -> orderUseCase.updateOrderStatus(order.getId(), OrderStatus.ABANDONED));
-
+        orders.forEach(order -> {
+                   // TODO: Update email
+                    UpdateStatusCommand command = new UpdateStatusCommand(order.getId(), OrderStatus.ABANDONED, "admin@example.com");
+            orderUseCase.updateOrderStatus(command);
+                });
         orderJpaRepository.saveAll(orders);
 
     }

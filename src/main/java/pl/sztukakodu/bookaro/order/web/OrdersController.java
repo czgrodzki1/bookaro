@@ -14,8 +14,10 @@ import pl.sztukakodu.bookaro.web.CreatedURI;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.http.HttpStatus.*;
+import static pl.sztukakodu.bookaro.order.application.port.ManipulateOrderUseCase.*;
 
 @RestController
 @AllArgsConstructor
@@ -53,21 +55,24 @@ class OrdersController {
 
     @PutMapping("/{id}/status")
     @ResponseStatus(ACCEPTED)
-    public void updateOrderStatus(@PathVariable Long id, @RequestBody UpdateStatusCommand command) {
+    public ResponseEntity<Object> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String status = body.get("status");
         OrderStatus orderStatus = OrderStatus
-            .parseString(command.status)
-            .orElseThrow(() -> new ResponseStatusException(BAD_REQUEST, "Unknown status: " + command.status));
-        manipulateOrder.updateOrderStatus(id, orderStatus);
+            .parseString(body.get(status))
+            .orElseThrow(() -> new ResponseStatusException(BAD_REQUEST, "Unknown status: " + status));
+        // TODO: Update email
+        UpdateStatusCommand command = new UpdateStatusCommand(id, orderStatus, "admin@example.com");
+        return manipulateOrder
+                .updateOrderStatus(command)
+                .handle(
+                        newStatus -> ResponseEntity.accepted().body(newStatus),
+                        error -> ResponseEntity.badRequest().body(error)
+                );
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(NO_CONTENT)
     public void deleteOrder(@PathVariable Long id) {
         manipulateOrder.deleteOrderById(id);
-    }
-
-    @Data
-    static class UpdateStatusCommand {
-        String status;
     }
 }
