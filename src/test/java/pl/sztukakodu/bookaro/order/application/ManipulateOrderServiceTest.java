@@ -54,7 +54,7 @@ class ManipulateOrderServiceTest {
     }
 
     @Test
-    public void orderingMoreBooksThanAvaliableThrowsException() {
+    public void orderingMoreBooksThanAvailableThrowsException() {
         //given
         Book effectiveJava = setUpEffectiveJava(50L);
         PlaceOrderCommand command = PlaceOrderCommand.builder()
@@ -171,6 +171,42 @@ class ManipulateOrderServiceTest {
 
     }
 
+    @Test
+    // TODO: fix with security
+    public void adminCanRevokeAnyOrder() {
+        // given
+        Book effectiveJava = setUpEffectiveJava(50L);
+        String adam = "adam@example.com";
+        Long orderId = placeOrder(effectiveJava.getId(), 15, adam);
+        assertEquals(35L, availableBooks(effectiveJava));
+
+        // when
+        UpdateStatusCommand command = new UpdateStatusCommand(orderId, OrderStatus.CANCELED, "admin@example.com");
+        manipulateOrderService.updateOrderStatus(command);
+
+        // then
+        assertEquals(50L, availableBooks(effectiveJava));
+        assertEquals(OrderStatus.CANCELED, queryOrderService.findById(orderId).get().getStatus());
+
+    }
+
+    @Test
+    public void adminCanMarkOrderAsPaid() {
+        // given
+        Book effectiveJava = setUpEffectiveJava(50L);
+        Long orderId = placeOrder(effectiveJava.getId(), 15);
+        assertEquals(35L, availableBooks(effectiveJava));
+
+        // when
+        // TODO: Update email
+        UpdateStatusCommand command = new UpdateStatusCommand(orderId, OrderStatus.PAID, "admin@example.com");
+        manipulateOrderService.updateOrderStatus(command);
+
+        // then
+        assertEquals(35L, availableBooks(effectiveJava));
+        assertEquals(OrderStatus.PAID, queryOrderService.findById(orderId).get().getStatus());
+    }
+
     private Book setUpJavaConcurrency(final Long available) {
         return bookJpaRepository.save(new Book("Java Concurrency in Practice", 2006, new BigDecimal("99.90"), available));
     }
@@ -186,7 +222,6 @@ class ManipulateOrderServiceTest {
     private Recipient setUpRecipient(String email) {
         return Recipient.builder().email(email).build();
     }
-
 
     private Long availableBooks(Book book) {
         return catalogUseCase.findById(book.getId())
