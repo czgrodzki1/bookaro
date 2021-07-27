@@ -24,7 +24,6 @@ import static org.mockito.BDDMockito.given;
 @ContextConfiguration(classes = {CatalogController.class})
 class CatalogControllerTest {
 
-
     @MockBean
     private CatalogUseCase catalogUseCase;
     @Autowired

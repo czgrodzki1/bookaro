@@ -2,9 +2,12 @@ package pl.sztukakodu.bookaro.order.application.port;
 
 import lombok.*;
 import pl.sztukakodu.bookaro.commons.Either;
+import pl.sztukakodu.bookaro.order.domain.Delivery;
 import pl.sztukakodu.bookaro.order.domain.OrderStatus;
 import pl.sztukakodu.bookaro.order.domain.Recipient;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import java.util.Set;
 
 public interface ManipulateOrderUseCase {
@@ -21,6 +24,8 @@ public interface ManipulateOrderUseCase {
         @Singular
         Set<OrderItemCommand> items;
         Recipient recipient;
+        @Builder.Default
+        Delivery delivery = Delivery.COURIER;
     }
 
     @Value

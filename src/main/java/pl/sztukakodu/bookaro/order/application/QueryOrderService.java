@@ -7,6 +7,8 @@ import pl.sztukakodu.bookaro.catalog.db.BookJpaRepository;
 import pl.sztukakodu.bookaro.order.application.port.QueryOrderUseCase;
 import pl.sztukakodu.bookaro.order.db.OrderJpaRepository;
 import pl.sztukakodu.bookaro.order.domain.Order;
+import pl.sztukakodu.bookaro.order.price.OrderPrice;
+import pl.sztukakodu.bookaro.order.price.PriceService;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +18,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 class QueryOrderService implements QueryOrderUseCase {
     private final OrderJpaRepository repository;
-    private final BookJpaRepository catalogRepository;
+    private final PriceService priceService;
 
     @Override
     @Transactional
@@ -28,17 +30,21 @@ class QueryOrderService implements QueryOrderUseCase {
     }
 
     @Override
+    @Transactional
     public Optional<RichOrder> findById(Long id) {
         return repository.findById(id).map(this::toRichOrder);
     }
 
     private RichOrder toRichOrder(Order order) {
+        OrderPrice orderPrice = priceService.calculatePrice(order);
         return new RichOrder(
-            order.getId(),
-            order.getStatus(),
-            order.getItems(),
-            order.getRecipient(),
-            order.getCreatedAt()
+                order.getId(),
+                order.getStatus(),
+                order.getItems(),
+                order.getRecipient(),
+                order.getCreatedAt(),
+                orderPrice,
+                orderPrice.finalPrice()
         );
     }
 

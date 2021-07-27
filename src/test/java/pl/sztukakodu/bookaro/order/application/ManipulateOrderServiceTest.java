@@ -8,6 +8,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import pl.sztukakodu.bookaro.catalog.application.port.CatalogUseCase;
 import pl.sztukakodu.bookaro.catalog.db.BookJpaRepository;
 import pl.sztukakodu.bookaro.catalog.domain.Book;
+import pl.sztukakodu.bookaro.order.domain.Delivery;
 import pl.sztukakodu.bookaro.order.domain.OrderStatus;
 import pl.sztukakodu.bookaro.order.domain.Recipient;
 
@@ -207,6 +208,65 @@ class ManipulateOrderServiceTest {
         assertEquals(OrderStatus.PAID, queryOrderService.findById(orderId).get().getStatus());
     }
 
+    @Test
+    public void shippingCostsAreAddedToTotalOrderPrice() {
+        // given
+        Book book = setUpBook(50L, "49.90");
+
+        // when
+        Long orderId = placeOrder(book.getId(), 1);
+
+        // then
+        assertEquals("59.80", orderOf(orderId).getFinalPrice().toPlainString());
+    }
+
+    @Test
+    public void shippingCostsAreDiscountedOver100zlotys() {
+        // given
+        Book book = setUpBook(50L, "49.90");
+
+        // when
+        Long orderId = placeOrder(book.getId(), 3);
+
+        // then
+        RichOrder order = orderOf(orderId);
+        assertEquals("149.70", order.getFinalPrice().toPlainString());
+        assertEquals("149.70", order.getPrice().getItemsPrice().toPlainString());
+    }
+
+    @Test
+    public void cheapestBookIsHalfPricedWhenTotalOver200zlotys() {
+        // given
+        Book book = setUpBook(50L, "49.90");
+
+        // when
+        Long orderId = placeOrder(book.getId(), 5);
+
+        // then
+        RichOrder order = orderOf(orderId);
+        assertEquals("224.55", order.getFinalPrice().toPlainString());
+    }
+
+    @Test
+    public void cheapestBookIsFreeWhenTotalOver400zlotys() {
+        // given
+        Book book = setUpBook(50L, "49.90");
+
+        // when
+        Long orderId = placeOrder(book.getId(), 10);
+
+        // then
+        assertEquals("449.10", orderOf(orderId).getFinalPrice().toPlainString());
+    }
+
+    private RichOrder orderOf(Long orderId) {
+        return queryOrderService.findById(orderId).get();
+    }
+
+    private Book setUpBook(long available, String price) {
+        return bookJpaRepository.save(new Book("Java Concurrency in Practice", 2006, new BigDecimal(price), available));
+    }
+
     private Book setUpJavaConcurrency(final Long available) {
         return bookJpaRepository.save(new Book("Java Concurrency in Practice", 2006, new BigDecimal("99.90"), available));
     }
@@ -238,6 +298,7 @@ class ManipulateOrderServiceTest {
                 .builder()
                 .recipient(setUpRecipient(recipient))
                 .item(new OrderItemCommand(bookId, quantity))
+                .delivery(Delivery.COURIER)
                 .build();
 
         return manipulateOrderService.placeOrder(command).getRight();
