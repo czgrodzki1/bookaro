@@ -5,6 +5,7 @@ import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -55,6 +56,7 @@ class CatalogController {
     }
 
     @PatchMapping("/{id}")
+    @Secured({"ROLE_ADMIN"})
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void updateBook(@PathVariable Long id, @RequestBody RestBookCommand command) {
         UpdateBookResponse response = catalog.updateBook(command.toUpdateCommand(id));
@@ -65,6 +67,7 @@ class CatalogController {
     }
 
     @PutMapping(value = "/{id}/cover", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @Secured({"ROLE_ADMIN"})
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void addBookCover(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws IOException {
         catalog.updateBookCover(new UpdateBookCoverCommand(
@@ -76,12 +79,14 @@ class CatalogController {
     }
 
     @DeleteMapping("/{id}/cover")
+    @Secured({"ROLE_ADMIN"})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeBookCover(@PathVariable Long id) {
         catalog.removeBookCover(id);
     }
 
     @PostMapping
+    @Secured({"ROLE_ADMIN"})
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Void> addBook(@Valid @RequestBody RestBookCommand command) {
         Book book = catalog.addBook(command.toCreateCommand());
@@ -89,6 +94,7 @@ class CatalogController {
     }
 
     @DeleteMapping("/{id}")
+    @Secured({"ROLE_ADMIN"})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteById(@PathVariable Long id) {
         catalog.removeById(id);

@@ -2,6 +2,7 @@ package pl.sztukakodu.bookaro.order.web;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import pl.sztukakodu.bookaro.order.application.port.ManipulateOrderUseCase;
@@ -25,11 +26,13 @@ class OrdersController {
     private final ManipulateOrderUseCase manipulateOrder;
     private final QueryOrderUseCase queryOrder;
 
+    @Secured({"ROLE_ADMIN"})
     @GetMapping
     public List<RichOrder> getOrders() {
         return queryOrder.findAll();
     }
 
+    @Secured({"ROLE_ADMIN", "ROLE_USER"})
     @GetMapping("/{id}")
     public ResponseEntity<RichOrder> getOrderById(@PathVariable Long id) {
         return queryOrder.findById(id)
@@ -53,6 +56,7 @@ class OrdersController {
     }
 
     @PatchMapping("/{id}/status")
+    @Secured({"ROLE_ADMIN", "ROLE_USER"})
     @ResponseStatus(ACCEPTED)
     public ResponseEntity<Object> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         String status = body.get("status");
@@ -70,6 +74,7 @@ class OrdersController {
     }
 
     @DeleteMapping("/{id}")
+    @Secured({"ROLE_ADMIN"})
     @ResponseStatus(NO_CONTENT)
     public void deleteOrder(@PathVariable Long id) {
         manipulateOrder.deleteOrderById(id);
