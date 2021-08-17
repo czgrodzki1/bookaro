@@ -8,7 +8,7 @@ Content-Type: application/json
 {
   "items": [
     {
-      "bookId": 3,
+      "bookId": 1,
       "quantity": 10
     },
     {
@@ -36,3 +36,6 @@ Content-Type: application/json
 {
   "status" : "CANCELED"
 }
+
+###
+GET http://localhost:8080/catalog

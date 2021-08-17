@@ -1,7 +1,6 @@
 package pl.sztukakodu.bookaro.order.web;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -53,7 +52,7 @@ class OrdersController {
         return new CreatedURI("/" + orderId).uri();
     }
 
-    @PutMapping("/{id}/status")
+    @PatchMapping("/{id}/status")
     @ResponseStatus(ACCEPTED)
     public ResponseEntity<Object> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         String status = body.get("status");
