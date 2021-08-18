@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.test.annotation.DirtiesContext;
 import pl.sztukakodu.bookaro.catalog.application.port.CatalogUseCase;
 import pl.sztukakodu.bookaro.catalog.db.BookJpaRepository;
@@ -13,6 +15,7 @@ import pl.sztukakodu.bookaro.order.domain.OrderStatus;
 import pl.sztukakodu.bookaro.order.domain.Recipient;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -37,7 +40,7 @@ class ManipulateOrderServiceTest {
     private QueryOrderService queryOrderService;
 
     @Test
-    public void placeAnOrderHappyPath() {
+     void placeAnOrderHappyPath() {
         //given
         Book effectiveJava = setUpEffectiveJava(50L);
         Book javaConcurrency = setUpJavaConcurrency(50L);
@@ -55,7 +58,7 @@ class ManipulateOrderServiceTest {
     }
 
     @Test
-    public void orderingMoreBooksThanAvailableThrowsException() {
+     void orderingMoreBooksThanAvailableThrowsException() {
         //given
         Book effectiveJava = setUpEffectiveJava(50L);
         PlaceOrderCommand command = PlaceOrderCommand.builder()
@@ -72,7 +75,7 @@ class ManipulateOrderServiceTest {
     }
 
     @Test
-    public void userCanRevokeOrder() {
+     void userCanRevokeOrder() {
         // given
         Book effectiveJava = setUpEffectiveJava(50L);
         Long orderId = placeOrder(effectiveJava.getId(), 15);
@@ -80,7 +83,7 @@ class ManipulateOrderServiceTest {
 
         // when
         // TODO: Update email
-        UpdateStatusCommand command = new UpdateStatusCommand(orderId, OrderStatus.CANCELED, "test@example.com");
+        UpdateStatusCommand command = new UpdateStatusCommand(orderId, OrderStatus.CANCELED, user("test@example.com"));
         manipulateOrderService.updateOrderStatus(command);
 
         // then
@@ -89,17 +92,15 @@ class ManipulateOrderServiceTest {
     }
 
     @Test
-    public void userCannotRevokePaidOrder() {
+     void userCannotRevokePaidOrder() {
         //given
         Book effectiveJava = setUpEffectiveJava(50L);
         Long orderId = placeOrder(effectiveJava.getId(), 15);
-        // TODO: Update email
-        UpdateStatusCommand updateStatusToPaid = new UpdateStatusCommand(orderId, OrderStatus.PAID, "test@example.com");
+        UpdateStatusCommand updateStatusToPaid = new UpdateStatusCommand(orderId, OrderStatus.PAID, user("test@example.com"));
         manipulateOrderService.updateOrderStatus(updateStatusToPaid);
 
         //when
-        // TODO: Update email
-        UpdateStatusCommand updateStatusToCanceled = new UpdateStatusCommand(orderId, OrderStatus.CANCELED, "test@example.com");
+        UpdateStatusCommand updateStatusToCanceled = new UpdateStatusCommand(orderId, OrderStatus.CANCELED, user("test@example.com"));
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> manipulateOrderService.updateOrderStatus(updateStatusToCanceled));
 
         //then
@@ -107,20 +108,18 @@ class ManipulateOrderServiceTest {
     }
 
     @Test
-    public void userCannotRevokeShippedOrder() {
+     void userCannotRevokeShippedOrder() {
         //given
         Book effectiveJava = setUpEffectiveJava(50L);
         Long orderId = placeOrder(effectiveJava.getId(), 15);
-        // TODO: Update email
-        UpdateStatusCommand updateStatusToPaid = new UpdateStatusCommand(orderId, OrderStatus.PAID, "test@example.com");
+        UpdateStatusCommand updateStatusToPaid = new UpdateStatusCommand(orderId, OrderStatus.PAID, user("test@example.com"));
         manipulateOrderService.updateOrderStatus(updateStatusToPaid);
-        // TODO: Update email
-        UpdateStatusCommand updateStatusToShipped = new UpdateStatusCommand(orderId, OrderStatus.SHIPPED, "test@example.com");
+        UpdateStatusCommand updateStatusToShipped = new UpdateStatusCommand(orderId, OrderStatus.SHIPPED, user("test@example.com"));
         manipulateOrderService.updateOrderStatus(updateStatusToShipped);
 
         //when
         // TODO: Update email
-        UpdateStatusCommand updateStatusToCanceled = new UpdateStatusCommand(orderId, OrderStatus.CANCELED, "test@example.com");
+        UpdateStatusCommand updateStatusToCanceled = new UpdateStatusCommand(orderId, OrderStatus.CANCELED, user("test@example.com"));
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> manipulateOrderService.updateOrderStatus(updateStatusToCanceled));
 
         //then
@@ -128,7 +127,7 @@ class ManipulateOrderServiceTest {
     }
 
     @Test
-    public void userCannotOrderNonExistingBooks() {
+     void userCannotOrderNonExistingBooks() {
         //given
         final long FAKE_ID = 10L;
 
@@ -140,7 +139,7 @@ class ManipulateOrderServiceTest {
     }
 
     @Test
-    public void userCannotOrderNegativeNumberOfBooks() {
+     void userCannotOrderNegativeNumberOfBooks() {
         //given
         final long AVAILABLE = 10L;
         final int REQUESTED = 15;
@@ -155,7 +154,7 @@ class ManipulateOrderServiceTest {
     }
 
     @Test
-    public void userCannotRevokeOtherUsersOrder() {
+     void userCannotRevokeOtherUsersOrder() {
         // given
         Book effectiveJava = setUpEffectiveJava(50L);
         String adam = "adam@example.com";
@@ -163,7 +162,7 @@ class ManipulateOrderServiceTest {
         assertEquals(35L, availableBooks(effectiveJava));
 
         // when
-        UpdateStatusCommand command = new UpdateStatusCommand(orderId, OrderStatus.CANCELED, "marek@example.com");
+        UpdateStatusCommand command = new UpdateStatusCommand(orderId, OrderStatus.CANCELED, user("marek@example.com"));
         manipulateOrderService.updateOrderStatus(command);
 
         // then
@@ -173,8 +172,7 @@ class ManipulateOrderServiceTest {
     }
 
     @Test
-    // TODO: fix with security
-    public void adminCanRevokeAnyOrder() {
+     void adminCanRevokeAnyOrder() {
         // given
         Book effectiveJava = setUpEffectiveJava(50L);
         String adam = "adam@example.com";
@@ -182,7 +180,7 @@ class ManipulateOrderServiceTest {
         assertEquals(35L, availableBooks(effectiveJava));
 
         // when
-        UpdateStatusCommand command = new UpdateStatusCommand(orderId, OrderStatus.CANCELED, "admin@example.com");
+        UpdateStatusCommand command = new UpdateStatusCommand(orderId, OrderStatus.CANCELED, admin());
         manipulateOrderService.updateOrderStatus(command);
 
         // then
@@ -192,7 +190,7 @@ class ManipulateOrderServiceTest {
     }
 
     @Test
-    public void adminCanMarkOrderAsPaid() {
+     void adminCanMarkOrderAsPaid() {
         // given
         Book effectiveJava = setUpEffectiveJava(50L);
         Long orderId = placeOrder(effectiveJava.getId(), 15);
@@ -200,7 +198,7 @@ class ManipulateOrderServiceTest {
 
         // when
         // TODO: Update email
-        UpdateStatusCommand command = new UpdateStatusCommand(orderId, OrderStatus.PAID, "admin@example.com");
+        UpdateStatusCommand command = new UpdateStatusCommand(orderId, OrderStatus.PAID, admin());
         manipulateOrderService.updateOrderStatus(command);
 
         // then
@@ -209,7 +207,7 @@ class ManipulateOrderServiceTest {
     }
 
     @Test
-    public void shippingCostsAreAddedToTotalOrderPrice() {
+     void shippingCostsAreAddedToTotalOrderPrice() {
         // given
         Book book = setUpBook(50L, "49.90");
 
@@ -221,7 +219,7 @@ class ManipulateOrderServiceTest {
     }
 
     @Test
-    public void shippingCostsAreDiscountedOver100zlotys() {
+     void shippingCostsAreDiscountedOver100zlotys() {
         // given
         Book book = setUpBook(50L, "49.90");
 
@@ -235,7 +233,7 @@ class ManipulateOrderServiceTest {
     }
 
     @Test
-    public void cheapestBookIsHalfPricedWhenTotalOver200zlotys() {
+     void cheapestBookIsHalfPricedWhenTotalOver200zlotys() {
         // given
         Book book = setUpBook(50L, "49.90");
 
@@ -248,7 +246,7 @@ class ManipulateOrderServiceTest {
     }
 
     @Test
-    public void cheapestBookIsFreeWhenTotalOver400zlotys() {
+     void cheapestBookIsFreeWhenTotalOver400zlotys() {
         // given
         Book book = setUpBook(50L, "49.90");
 
@@ -257,6 +255,14 @@ class ManipulateOrderServiceTest {
 
         // then
         assertEquals("449.10", orderOf(orderId).getFinalPrice().toPlainString());
+    }
+
+    private User user(String email){
+        return new User(email, "", List.of(new SimpleGrantedAuthority("ROLE_USER")));
+    }
+
+    private User admin() {
+        return new User("admin", "", List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
     }
 
     private RichOrder orderOf(Long orderId) {
