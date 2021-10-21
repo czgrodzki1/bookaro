@@ -8,10 +8,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.client.RestTemplate;
 import pl.sztukakodu.bookaro.order.application.OrdersProperties;
+import pl.sztukakodu.bookaro.security.AdminConfig;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableConfigurationProperties({OrdersProperties.class})
+@EnableConfigurationProperties({OrdersProperties.class, AdminConfig.class})
 public class BookaroOnlineStoreApplication {
 
     public static void main(String[] args) {

@@ -52,7 +52,7 @@ class AbandonedOrdersJobTest {
     private Clock.MockClock mockClock;
 
     @Test
-    public void ShouldMarkOrdersAsAbandoned() {
+    void ShouldMarkOrdersAsAbandoned() {
         //given
         Book book = setUpEffectiveJava(50L);
         Long orderId = placeOrder(book.getId(), 20);

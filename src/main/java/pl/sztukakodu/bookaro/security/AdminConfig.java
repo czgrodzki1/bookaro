@@ -5,7 +5,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,7 +14,7 @@ public class AdminConfig {
 
     private String username;
     private String password;
-    private Set<String> roles = new HashSet<>();
+    private Set<String> roles;
 
     User adminUser() {
         return new User(username, password,

@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import pl.sztukakodu.bookaro.catalog.application.port.CatalogUseCase;
 import pl.sztukakodu.bookaro.catalog.domain.Book;
@@ -19,6 +21,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CatalogController.class)
+@ActiveProfiles("test")
+@WithMockUser
 class CatalogControllerWebTest {
 
     @MockBean
@@ -29,7 +33,7 @@ class CatalogControllerWebTest {
 
 
     @Test
-    public void shouldGetAllBooks() throws Exception {
+    void shouldGetAllBooks() throws Exception {
         //given
         Book effectiveJava = new Book("Java Concurrency in Practice", 2006, new BigDecimal("99.90"), 50L);
         Book javaConcurrency = new Book("Effective Java", 2005, new BigDecimal("129.90"), 50L);

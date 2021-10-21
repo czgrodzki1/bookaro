@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import pl.sztukakodu.bookaro.clock.Clock;
@@ -26,7 +27,7 @@ public class AbandonedOrdersJob {
     private final OrderJpaRepository orderJpaRepository;
     private final ManipulateOrderUseCase orderUseCase;
     private final OrdersProperties properties;
-    private final User systemUser;
+    private final UserDetails systemUser;
     private final Clock clock;
 
     @Scheduled(cron = "${app.orders.abandon-cron}")
