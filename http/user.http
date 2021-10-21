@@ -1,0 +1,20 @@
+POST localhost:8080/users
+Content-Type: application/json
+
+{
+  "username": "abc@nic.pl",
+  "password": "dupa1234"
+}
+
+###
+
+POST localhost:8080/login
+Content-Type: application/json
+
+{
+"username": "abc@nic.pl",
+"password": "dupa1234"
+}
+
+###
+GET localhost:8080/orders/111

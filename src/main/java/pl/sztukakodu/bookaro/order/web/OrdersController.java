@@ -4,13 +4,13 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import pl.sztukakodu.bookaro.order.application.RichOrder;
 import pl.sztukakodu.bookaro.order.application.port.ManipulateOrderUseCase;
 import pl.sztukakodu.bookaro.order.application.port.ManipulateOrderUseCase.PlaceOrderCommand;
 import pl.sztukakodu.bookaro.order.application.port.QueryOrderUseCase;
-import pl.sztukakodu.bookaro.order.application.RichOrder;
 import pl.sztukakodu.bookaro.order.domain.OrderStatus;
 import pl.sztukakodu.bookaro.security.UserSecurity;
 import pl.sztukakodu.bookaro.web.CreatedURI;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.springframework.http.HttpStatus.*;
-import static pl.sztukakodu.bookaro.order.application.port.ManipulateOrderUseCase.*;
+import static pl.sztukakodu.bookaro.order.application.port.ManipulateOrderUseCase.UpdateStatusCommand;
 
 @RestController
 @AllArgsConstructor
@@ -38,13 +38,13 @@ class OrdersController {
 
     @Secured({"ROLE_ADMIN", "ROLE_USER"})
     @GetMapping("/{id}")
-    public ResponseEntity<RichOrder> getOrderById(@PathVariable Long id, @AuthenticationPrincipal User user) {
+    public ResponseEntity<RichOrder> getOrderById(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
         return queryOrder.findById(id)
                 .map(order -> authorize(order, user))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    private ResponseEntity<RichOrder> authorize(RichOrder order, User user){
+    private ResponseEntity<RichOrder> authorize(RichOrder order, UserDetails user){
         if (userSecurity.isOwnerOrAdmin(order.getRecipient().getEmail(), user)) {
             return ResponseEntity.ok(order);
         }
@@ -68,7 +68,7 @@ class OrdersController {
 
     @PatchMapping("/{id}/status")
     @Secured({"ROLE_ADMIN", "ROLE_USER"})
-    public ResponseEntity<Object> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, String> body, @AuthenticationPrincipal User user) {
+    public ResponseEntity<Object> updateOrderStatus(@PathVariable Long id, @RequestBody Map<String, String> body, @AuthenticationPrincipal UserDetails user) {
         String status = body.get("status");
         OrderStatus orderStatus = OrderStatus
                 .parseString(status)
