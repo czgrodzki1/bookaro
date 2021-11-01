@@ -1,0 +1,12 @@
+spring:
+    profiles: generatesql
+    flyway.enabled: false
+    jpa.properties.javax.persistence.schema-generation.scripts:
+        action: create
+        create-target: create.sql
+        create-source: metadata
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://localhost:7432/bookaro
+        username: admin
+        password: pass123
