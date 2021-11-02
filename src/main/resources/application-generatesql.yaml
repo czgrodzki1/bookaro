@@ -1,9 +1,9 @@
 spring:
     profiles: generatesql
-    flyway.enabled: false
+    flyway.enabled: true
     jpa.properties.javax.persistence.schema-generation.scripts:
         action: create
-        create-target: create.sql
+        create-target: V1__initial_script.sql
         create-source: metadata
     datasource:
         driver-class-name: org.postgresql.Driver
